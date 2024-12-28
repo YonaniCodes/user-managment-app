@@ -23,7 +23,7 @@ const getCurrentUser = async () => {
   try {
     const response = await axios.get("api/auth/me");
     console.log(response, "...................................");
-    return response.data;
+    return response.data.user;
   } catch (error) {
     throw error.message;
   }

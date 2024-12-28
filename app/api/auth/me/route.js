@@ -4,7 +4,6 @@ import prisma from "@/app/_lib/prisma";
 import jwt from "jsonwebtoken";
 
 export async function GET(req) {
-  console.log("getting .................. sessiuion");
   const cookies = cookie.parse(req.headers.get("Cookie") || "");
   const token = cookies.token;
 
@@ -23,7 +22,6 @@ export async function GET(req) {
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-    console.log(user);
 
     return NextResponse.json({ user }, { status: 200 });
   } catch (err) {

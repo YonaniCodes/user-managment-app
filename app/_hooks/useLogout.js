@@ -1,18 +1,19 @@
 "use client";
 import { QueryClient, useMutation } from "@tanstack/react-query";
-import { Logout } from "../_lib/actions";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
 export default function useLogout() {
+  const queryClient = new QueryClient();
   const router = useRouter();
   const { mutate: logout, isLoading } = useMutation({
     mutationFn: () => axios.post("/api/auth/logout"), // Ensure Logout returns a Promise.
     onSuccess: () => {
-      router.push("/login");
-      QueryClient.invalidateQueries({
+      queryClient.invalidateQueries({
         queryKey: ["user"],
       });
+      window.location.reload();
+      router.push("/login");
     },
     onError: (err) => {
       console.error("Logout failed:", err);

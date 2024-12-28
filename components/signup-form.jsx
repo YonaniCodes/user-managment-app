@@ -13,16 +13,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
+import useSignup from "@/app/_hooks/useSignup";
 
 export function SignupForm({ className, ...props }) {
+  const { isLoading, signup } = useSignup();
   const {
     register,
     handleSubmit,
+    getValues,
     formState: { errors },
   } = useForm();
 
   const onSubmit = (data) => {
     console.log("Signup data:", data);
+
+    data.username = data.email.split("@")[0];
+    console.log("Signup data:", data);
+
+    signup(data);
   };
 
   return (
@@ -35,27 +43,38 @@ export function SignupForm({ className, ...props }) {
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-6">
+              {/* Email Field */}
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
                   placeholder="m@example.com"
-                  {...register("email", { required: "Email is required" })}
+                  {...register("email", {
+                    required: "Email is required",
+                    pattern: {
+                      value: /\S+@\S+\.\S+/,
+                      message: "Invalid email address",
+                    },
+                  })}
                 />
                 {errors.email && (
                   <p className="text-red-500 text-sm">{errors.email.message}</p>
                 )}
               </div>
+
+              {/* Password Field */}
               <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                </div>
+                <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
                   type="password"
                   {...register("password", {
                     required: "Password is required",
+                    minLength: {
+                      value: 8,
+                      message: "Password must be at least 8 characters long",
+                    },
                   })}
                 />
                 {errors.password && (
@@ -64,18 +83,36 @@ export function SignupForm({ className, ...props }) {
                   </p>
                 )}
               </div>
-              {/* <div className="grid gap-2"></div>div>
-                <div className="flex items-center">
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
-                </div>
-                <Input id="confirmPassword" type="confirmPassword" required />
-              </div> */}
-              <Button type="submit" className="w-full">
-                Sign Up
+
+              {/* Confirm Password Field */}
+              <div className="grid gap-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  {...register("confirmPassword", {
+                    required: "Please confirm your password",
+                    validate: (value) =>
+                      value === getValues("password") ||
+                      "Passwords do not match",
+                  })}
+                />
+                {errors.confirmPassword && (
+                  <p className="text-red-500 text-sm">
+                    {errors.confirmPassword.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Submit Button */}
+              <Button disabled={isLoading} type="submit" className="w-full">
+                {isLoading ? "Loading" : "Signup"}
               </Button>
             </div>
+
+            {/* Login Link */}
             <div className="mt-4 text-center text-sm">
-              Aleady have an account?{" "}
+              Already have an account?{" "}
               <Link href="/login" className="underline underline-offset-4">
                 Login
               </Link>

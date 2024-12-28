@@ -12,29 +12,43 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import useLogin from "@/app/hooks/useLogin"; // Custom hook for login
+import useLogin from "@/app/_hooks/useLogin"; // Custom hook for login
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/app/_components/UserProvider"; // for managing user context
+import { z } from "zod"; // Import Zod for validation
+import { zodResolver } from "@hookform/resolvers/zod"; // For integration with react-hook-form
+
+// Define Zod schema for form validation
+const loginSchema = z.object({
+  email: z
+    .string()
+    .email("Invalid email address") // Email validation rule
+    .nonempty("Email is required"), // Ensures email is not empty
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters long") // Password length rule
+    .nonempty("Password is required"), // Ensures password is not empty
+});
 
 export function LoginForm({ className, ...props }) {
   const {
+    reset,
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    resolver: zodResolver(loginSchema), // Integrating Zod with react-hook-form
+  });
 
   const { isLoading, login } = useLogin();
   const router = useRouter();
 
-  // Submit handler for login form
   const onSubmit = (data) => {
     login(data, {
       onSuccess: (user) => {
-        router.push("/"); // Navigate to homepage or dashboard
+        router.push("/");
       },
       onError: (error) => {
-        console.error("Login failed:", error.message);
-        // You could add a way to show the error message to the user
+        reset();
       },
     });
   };
@@ -58,13 +72,7 @@ export function LoginForm({ className, ...props }) {
                   id="email"
                   type="email"
                   placeholder="m@example.com"
-                  {...register("email", {
-                    required: "Email is required",
-                    pattern: {
-                      value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-                      message: "Invalid email address",
-                    },
-                  })}
+                  {...register("email")}
                 />
                 {errors.email && (
                   <p className="text-red-500 text-sm">{errors.email.message}</p>
@@ -79,13 +87,7 @@ export function LoginForm({ className, ...props }) {
                 <Input
                   id="password"
                   type="password"
-                  {...register("password", {
-                    required: "Password is required",
-                    minLength: {
-                      value: 8,
-                      message: "Password must be at least 8 characters long",
-                    },
-                  })}
+                  {...register("password")}
                 />
                 {errors.password && (
                   <p className="text-red-500 text-sm">
@@ -94,7 +96,6 @@ export function LoginForm({ className, ...props }) {
                 )}
               </div>
 
-              {/* Submit Button */}
               <Button disabled={isLoading} type="submit" className="w-full">
                 {isLoading ? "Loading..." : "Login"}
               </Button>

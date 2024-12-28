@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 
 import { serialize } from "cookie"; // Correct import
 import prisma from "@/app/_lib/prisma";
+import { signJwtAndCookie } from "@/app/_lib/auth";
 
 export async function POST(req) {
   // Check if the request body is empty
@@ -41,23 +42,11 @@ export async function POST(req) {
     );
   }
 
-  // Create JWT token
-  const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
-    expiresIn: "1h", // Token expiration time
-  });
+  // Create JWT token and sign cookie
+  let headers = new Headers();
+  headers = signJwtAndCookie(headers, { userId: user.id });
 
   // Set token in cookies
-  const headers = new Headers();
-  headers.set(
-    "Set-Cookie",
-    serialize("token", token, {
-      httpOnly: true, // Makes the cookie inaccessible to JavaScript
-      secure: process.env.NODE_ENV === "production", // Set secure cookie in production only
-      maxAge: 3600, // 1 hour
-      path: "/",
-      sameSite: "Strict", // Additional protection for CSRF attacks
-    })
-  );
 
   return new Response(JSON.stringify({ message: "Logged in successfully" }), {
     headers,

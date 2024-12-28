@@ -1,25 +1,20 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import MyAvatar from "../_SHADCN/MyAvatar";
+import useLogout from "../_hooks/useLogout";
 
-import { useAuth } from "./UserProvider";
-import { Logout } from "../_lib/actions";
-import { useRouter } from "next/navigation";
-import useLogout from "../hooks/useLogout";
-import { useUser } from "../hooks/useUser";
-
-export default function UserProfile() {
+export default function UserProfile({ user }) {
   const { logout, isLoading } = useLogout();
-  const router = useRouter();
   async function handleLogout() {
     logout();
   }
-  const { user } = useUser();
-  console.log(user, "..............");
+
+  const { username } = user;
+
   return (
     <>
       <div className="flex gap-4 items-center">
-        {user.username} <MyAvatar fallback={user.username} />
+        {username} <MyAvatar fallback={username} />
         <Button size="sm" onClick={handleLogout}>
           {isLoading ? "loading" : "Logout"}
         </Button>
